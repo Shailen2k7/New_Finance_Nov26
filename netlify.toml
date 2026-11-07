@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@electric-sql/pglite", "pdf-parse", "postgres"]
+
+# Background function that runs the AI statement parser (up to 15 minutes)
+[functions."parse-statement-background"]
+  included_files = ["src/lib/**"]

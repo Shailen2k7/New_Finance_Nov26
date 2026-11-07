@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-page: #f3f5f2;
+  --color-surface: #ffffff;
+  --color-surface-2: #f6f8f5;
+  --color-line: #e6e9e3;
+  --color-line-strong: #d6dbd2;
+  --color-ink: #111827;
+  --color-ink-2: #374151;
+  --color-muted: #6b7280;
+  --color-faint: #9ca3af;
+  --color-primary: #2f7a5c;
+  --color-primary-600: #25634a;
+  --color-primary-50: #eaf5ee;
+  --color-primary-100: #d3eadc;
+  --color-accent: #e08a3c;
+  --color-accent-50: #fff4ea;
+  --color-success: #2e8b57;
+  --color-success-50: #eaf7ee;
+  --color-danger: #d9534f;
+  --color-danger-50: #fdf0ef;
+  --color-warning: #d97a1f;
+  --color-warning-50: #fff5e8;
+  --color-mint: #e6f4ec;
+  --color-apricot: #fdeedd;
+  --color-sky: #e8f1fb;
+  --color-sand: #f7f1e6;
+  --color-info: #0ea5e9;
+  --color-chart-1: #3f9a73;
+  --color-chart-2: #f0a35e;
+  --color-chart-3: #5b8def;
+  --color-chart-4: #c9a227;
+  --color-chart-5: #e2706a;
+  --color-chart-6: #8e7cc3;
+  --color-chart-bar: #e7eae4;
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03);
+  --shadow-pop: 0 12px 32px rgba(16, 24, 40, 0.14), 0 2px 6px rgba(16, 24, 40, 0.06);
+}
+
+html, body { height: 100%; }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-feature-settings: "cv11", "ss01", "tnum";
+  -webkit-font-smoothing: antialiased;
+}
+
+* { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 8px; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* In the components layer so Tailwind utilities on the same element (pl-9, w-40) can override them. */
+@layer components {
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-card);
+  }
+
+  .tnum { font-variant-numeric: tabular-nums; }
+  .stat-value { @apply whitespace-nowrap text-[18px] font-semibold tracking-tight sm:text-[23px]; font-variant-numeric: tabular-nums; }
+  .tile-mint { background: linear-gradient(180deg, #f0f9f3 0%, #ffffff 70%); }
+  .tile-apricot { background: linear-gradient(180deg, #fff3e6 0%, #ffffff 70%); }
+  .tile-sky { background: linear-gradient(180deg, #ebf3fc 0%, #ffffff 70%); }
+  .tile-sand { background: linear-gradient(180deg, #f8f3e8 0%, #ffffff 70%); }
+
+  .input {
+    @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[14px] text-ink placeholder:text-faint outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:bg-surface-2 disabled:text-muted;
+  }
+  select.input { @apply pr-9 appearance-none bg-no-repeat; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-position: right 0.75rem center; }
+
+  .nav-item { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] text-ink-2 transition hover:bg-surface-2; }
+  .nav-item[data-active="true"] { @apply bg-primary-50 text-primary font-medium; }
+  .nav-item[data-active="true"] svg { color: var(--color-primary); }
+
+  .table { @apply w-full border-collapse text-[14px]; }
+  .table th { @apply sticky top-0 z-10 bg-[#f4f7f2] px-4 py-3 text-left text-[12px] font-medium uppercase tracking-wide text-muted border-b border-line; }
+  .table td { @apply px-4 py-3 border-b border-line align-middle; }
+  .table tbody tr:hover td { background: #fafbfc; }
+}
+
+@keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.fade-up { animation: fade-up 0.25s ease-out both; }
+@keyframes shimmer { 0% { background-position: -400px 0 } 100% { background-position: 400px 0 } }
+.skeleton { background: linear-gradient(90deg, #f1f3f6 25%, #e8ebf0 37%, #f1f3f6 63%); background-size: 800px 100%; animation: shimmer 1.4s infinite linear; border-radius: 8px; }
+
+.recharts-tooltip-wrapper { outline: none !important; }
+.recharts-cartesian-axis-tick-value { fill: #6b7280; font-size: 12px; }
