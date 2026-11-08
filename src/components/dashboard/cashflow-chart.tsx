@@ -2,19 +2,18 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { compactAxis, formatMoney } from "@/lib/money";
-import { monthLabel } from "@/lib/dates";
-import type { MonthlyRow } from "@/lib/reports";
+import type { CashflowBucket } from "@/lib/reports";
 
-export function CashflowChart({ data, currency }: { data: MonthlyRow[]; currency: string }) {
+export function CashflowChart({ data, currency, daily = false }: { data: CashflowBucket[]; currency: string; daily?: boolean }) {
   const [active, setActive] = useState<number | null>(null);
-  const rows = data.map((m) => ({ name: monthLabel(m.month), income: m.incomeMinor / 100, expense: Math.abs(m.expenseMinor) / 100, net: m.netMinor / 100 }));
+  const rows = data.map((m) => ({ name: m.label, income: m.incomeMinor / 100, expense: Math.abs(m.expenseMinor) / 100, net: m.netMinor / 100 }));
   const fmtAxis = (v: number) => compactAxis(v, currency);
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={rows} barCategoryGap="24%" barGap={3} onMouseMove={(s) => { const i = (s as { activeTooltipIndex?: number }).activeTooltipIndex; if (typeof i === "number") setActive(i); }} onMouseLeave={() => setActive(null)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <BarChart data={rows} barCategoryGap={daily && rows.length > 20 ? "16%" : "24%"} barGap={daily && rows.length > 20 ? 1 : 3} onMouseMove={(s) => { const i = (s as { activeTooltipIndex?: number }).activeTooltipIndex; if (typeof i === "number") setActive(i); }} onMouseLeave={() => setActive(null)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke="#edeff3" />
-          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 12 }} dy={8} />
+          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 12 }} dy={8} interval="preserveStartEnd" minTickGap={14} />
           <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 12 }} tickFormatter={fmtAxis} width={44} />
           <Tooltip cursor={{ fill: "#f4f7f2" }} content={({ active: a, payload, label }) => {
             if (!a || !payload?.length) return null;
@@ -30,10 +29,10 @@ export function CashflowChart({ data, currency }: { data: MonthlyRow[]; currency
               </div>
             );
           }} />
-          <Bar dataKey="income" fill="var(--color-chart-1)" radius={[5, 5, 0, 0]} maxBarSize={30}>
+          <Bar dataKey="income" fill="var(--color-chart-1)" radius={[5, 5, 0, 0]} maxBarSize={daily && rows.length > 20 ? 14 : 30}>
             {rows.map((_, i) => <Cell key={i} fillOpacity={active === null || i === active ? 1 : 0.45} />)}
           </Bar>
-          <Bar dataKey="expense" fill="var(--color-chart-2)" radius={[5, 5, 0, 0]} maxBarSize={30}>
+          <Bar dataKey="expense" fill="var(--color-chart-2)" radius={[5, 5, 0, 0]} maxBarSize={daily && rows.length > 20 ? 14 : 30}>
             {rows.map((_, i) => <Cell key={i} fillOpacity={active === null || i === active ? 1 : 0.45} />)}
           </Bar>
         </BarChart>

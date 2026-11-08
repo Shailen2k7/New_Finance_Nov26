@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ArrowRight, Plus, FileUp, Landmark, Repeat, AlertTriangle, TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { getDashboardData, type DashPreset } from "@/lib/dashboard";
+import { getDashboardData } from "@/lib/dashboard";
+import { resolveDashRange, datesLabel } from "@/lib/report-ranges";
 import { formatMoney } from "@/lib/money";
-import { formatDate } from "@/lib/dates";
+import { businessNow, formatDate } from "@/lib/dates";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ColorDot, EmptyState, InitialAvatar, ProgressBar } from "@/components/ui/misc";
@@ -13,17 +14,15 @@ import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-const PRESETS: DashPreset[] = ["this_month", "last_month", "this_quarter", "this_year", "last_year", "last_12"];
-
 function delta(now: number, before: number) {
   if (!before) return null;
   return Math.round(((now - before) / Math.abs(before)) * 100);
 }
 
-export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ range?: string; days?: string; from?: string; to?: string }> }) {
   const sp = await searchParams;
-  const preset = (PRESETS.includes(sp.range as DashPreset) ? sp.range : "last_12") as DashPreset;
-  const d = await getDashboardData(preset);
+  const range = resolveDashRange(sp);
+  const d = await getDashboardData(range);
   const cur = d.base;
   const expenses = Math.abs(d.totals.expenseMinor);
   const prevExpenses = Math.abs(d.prevTotals.expenseMinor);
@@ -37,18 +36,20 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     d.attention.uncategorized > 0 && { label: `${d.attention.uncategorized} uncategorized transaction${d.attention.uncategorized > 1 ? "s" : ""}`, href: "/transactions?uncategorized=1" },
     d.attention.overdueRecurring > 0 && { label: `${d.attention.overdueRecurring} overdue recurring payment${d.attention.overdueRecurring > 1 ? "s" : ""}`, href: "/recurring" },
   ].filter(Boolean) as { label: string; href: string }[];
-  const hasData = d.monthly.some((m) => m.incomeMinor || m.expenseMinor);
+  const hasData = d.cashflow.rows.some((m) => m.incomeMinor || m.expenseMinor);
   const expenseTotal = d.expenseCats.reduce((a, c) => a + Math.abs(c.amountMinor), 0);
-  const rangeLabel = `${formatDate(d.range.from, "d MMM yyyy")} – ${formatDate(d.range.to, "d MMM yyyy")}`;
+  const dates = datesLabel(range);
+  const rangeLabel = range.key === "custom" ? dates : `${range.label} · ${dates}`;
+  const hour = businessNow().getHours();
 
   return (
     <div className="space-y-4 sm:space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-tight sm:text-[24px]">Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"} 👋</h1>
+          <h1 className="text-[22px] font-semibold tracking-tight sm:text-[24px]">Good {hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening"} 👋</h1>
           <p className="mt-1 text-[14px] text-muted">{d.businessName} · {rangeLabel} · amounts in {cur}</p>
         </div>
-        <RangePicker value={preset} />
+        <RangePicker activeKey={range.key} label={range.label} from={range.from} to={range.to} />
       </div>
 
       {attentionItems.length > 0 && (
@@ -68,8 +69,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <Card>
-          <CardHeader title="Cashflow" subtitle={`Income vs expenses by month · ${cur}`} action={<div className="flex items-center gap-4 text-[12px] text-muted"><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-chart-1" /> Income</span><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-chart-2" /> Expenses</span></div>} />
-          {hasData ? <CashflowChart data={d.monthly} currency={cur} /> : <EmptyState icon={<FileUp className="h-5 w-5" />} title="No transactions yet" description="Import a bank statement or add your first transaction to see your cashflow." action={<Link href="/import" className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-[14px] font-medium text-white">Import statement</Link>} />}
+          <CardHeader title="Cashflow" subtitle={`Income vs expenses by ${d.cashflow.bucket} · ${cur}`} action={<div className="flex items-center gap-4 text-[12px] text-muted"><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-chart-1" /> Income</span><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-chart-2" /> Expenses</span></div>} />
+          {hasData ? <CashflowChart data={d.cashflow.rows} currency={cur} daily={d.cashflow.bucket === "day"} /> : <EmptyState icon={<FileUp className="h-5 w-5" />} title="No transactions yet" description="Import a bank statement or add your first transaction to see your cashflow." action={<Link href="/import" className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-[14px] font-medium text-white">Import statement</Link>} />}
         </Card>
         <div className="space-y-4">
           <Card>

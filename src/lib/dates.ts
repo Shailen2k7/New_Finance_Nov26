@@ -2,8 +2,23 @@ import { parse, isValid, format } from "date-fns";
 
 export const ISO = "yyyy-MM-dd";
 
+/** The business runs on Indian time, wherever the server happens to be. */
+export const BUSINESS_TZ = "Asia/Kolkata";
+
+/** Current wall-clock time in India as a local Date (same fields a clock in India would show). */
+export function businessNow(): Date {
+  const now = new Date();
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: BUSINESS_TZ, year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hourCycle: "h23" }).formatToParts(now);
+    const get = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+    return new Date(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second"));
+  } catch {
+    return now;
+  }
+}
+
 export function todayISO(): string {
-  return format(new Date(), ISO);
+  return format(businessNow(), ISO);
 }
 
 export function toISO(d: Date): string {

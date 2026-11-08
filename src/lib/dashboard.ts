@@ -1,33 +1,29 @@
 import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
-import { addDays, differenceInCalendarDays, subDays } from "date-fns";
+import { addDays, subDays } from "date-fns";
 import { getDb, schema } from "./db";
 import { getSettings } from "./settings";
 import { getFxRate } from "./fx";
 import { todayISO, toISO } from "./dates";
-import { presetRange, getMonthlyPnl, getCategoryBreakdown, getReportTotals, type ReportRange, type RangePreset } from "./reports";
+import { getCashflow, getCategoryBreakdown, getReportTotals, type ReportRange, type ResolvedRange } from "./reports";
 
-export type DashPreset = RangePreset;
-
-export async function getDashboardData(preset: DashPreset) {
+export async function getDashboardData(range: ResolvedRange) {
   const db = await getDb();
   const settings = await getSettings();
   const base = settings.baseCurrency;
-  const range = presetRange(preset);
-  const days = differenceInCalendarDays(new Date(range.to), new Date(range.from)) + 1;
+  const days = range.days;
   const prev: ReportRange = { from: toISO(subDays(new Date(range.from + "T00:00:00"), days)), to: toISO(subDays(new Date(range.from + "T00:00:00"), 1)) };
-  const chartRange: ReportRange = preset === "this_month" || preset === "last_month" || preset === "this_quarter" ? presetRange("last_12") : range;
   const today = todayISO();
 
-  const [totals, prevTotals, monthly, expenseCats, incomeCats, accounts, balances, recent, upcoming, overdue, loans, loanPaid, uncategorized, pendingReviews] = await Promise.all([
+  const [totals, prevTotals, cashflow, expenseCats, incomeCats, accounts, balances, recent, upcoming, overdue, loans, loanPaid, uncategorized, pendingReviews] = await Promise.all([
     getReportTotals(range),
     getReportTotals(prev),
-    getMonthlyPnl(chartRange),
+    getCashflow(range),
     getCategoryBreakdown(range, "EXPENSE"),
     getCategoryBreakdown(range, "INCOME"),
     db.select().from(schema.accounts).where(eq(schema.accounts.isArchived, false)).orderBy(asc(schema.accounts.createdAt)),
     db.select({ id: schema.accounts.id, sum: sql<number>`coalesce(sum(${schema.transactions.amountMinor}),0)::bigint` }).from(schema.accounts).leftJoin(schema.transactions, eq(schema.transactions.accountId, schema.accounts.id)).groupBy(schema.accounts.id),
     db.query.transactions.findMany({ with: { account: true, category: true }, orderBy: [desc(schema.transactions.date), desc(schema.transactions.createdAt)], limit: 8 }),
-    db.query.recurringPayments.findMany({ where: and(eq(schema.recurringPayments.isActive, true), gte(schema.recurringPayments.nextDueDate, today), lte(schema.recurringPayments.nextDueDate, toISO(addDays(new Date(), 30)))), with: { category: true }, orderBy: asc(schema.recurringPayments.nextDueDate), limit: 6 }),
+    db.query.recurringPayments.findMany({ where: and(eq(schema.recurringPayments.isActive, true), gte(schema.recurringPayments.nextDueDate, today), lte(schema.recurringPayments.nextDueDate, toISO(addDays(new Date(today + "T00:00:00"), 30)))), with: { category: true }, orderBy: asc(schema.recurringPayments.nextDueDate), limit: 6 }),
     db.query.recurringPayments.findMany({ where: and(eq(schema.recurringPayments.isActive, true), sql`${schema.recurringPayments.nextDueDate} < ${today}`), with: { category: true }, orderBy: asc(schema.recurringPayments.nextDueDate) }),
     db.query.loans.findMany({ where: eq(schema.loans.status, "ACTIVE") }),
     db.select({ loanId: schema.loanPayments.loanId, principal: sql<number>`coalesce(sum(${schema.loanPayments.principalMinor}),0)::bigint` }).from(schema.loanPayments).groupBy(schema.loanPayments.loanId),
@@ -52,11 +48,10 @@ export async function getDashboardData(preset: DashPreset) {
   return {
     base,
     businessName: settings.businessName,
-    preset,
     range,
     totals,
     prevTotals,
-    monthly,
+    cashflow,
     expenseCats: expenseCats.slice(0, 6),
     incomeCats: incomeCats.slice(0, 5),
     accounts: accountCards,
