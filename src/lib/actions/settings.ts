@@ -4,7 +4,7 @@ import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "../db";
 import { recordAudit } from "../audit";
-import { getSettings } from "../settings";
+import { getSettings, invalidateSettings } from "../settings";
 import { getFxRate } from "../fx";
 
 const SettingsInput = z.object({
@@ -36,6 +36,7 @@ export async function updateSettings(raw: SettingsInputT) {
     set.sharedPassword = input.sharedPassword.trim();
   }
   await db.update(schema.settings).set(set).where(eq(schema.settings.id, 1));
+  invalidateSettings();
   const changes: string[] = [];
   if (before.businessName !== set.businessName) changes.push(`business name → "${set.businessName}"`);
   if (before.baseCurrency !== set.baseCurrency) changes.push(`base currency ${before.baseCurrency} → ${set.baseCurrency}`);

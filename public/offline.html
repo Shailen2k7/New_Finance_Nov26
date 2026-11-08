@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#ffffff" />
+<title>Offline · Migrizo Finance</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; min-height: 100dvh; display: grid; place-items: center; background: #f3f5f2; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; color: #1f2a24; padding: 16px; box-sizing: border-box; }
+  .card { width: 100%; max-width: 360px; background: #fff; border: 1px solid #e6e9e4; border-radius: 20px; padding: 28px 24px; text-align: center; box-shadow: 0 1px 2px rgba(16,24,40,.04); }
+  img { width: 56px; height: 56px; border-radius: 14px; }
+  h1 { font-size: 19px; margin: 16px 0 6px; }
+  p { margin: 0 0 20px; color: #6b7280; font-size: 14px; line-height: 1.5; }
+  button { width: 100%; height: 44px; border: 0; border-radius: 12px; background: #2f7a5c; color: #fff; font-size: 15px; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img src="/icons/icon-192.png" alt="" />
+    <h1>You're offline</h1>
+    <p>Migrizo Finance needs an internet connection to show your latest numbers. Check your connection and try again.</p>
+    <button onclick="location.reload()">Try again</button>
+  </div>
+</body>
+</html>

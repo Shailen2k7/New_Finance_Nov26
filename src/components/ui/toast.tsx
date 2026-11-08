@@ -24,7 +24,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastCtx.Provider value={ctx}>
       {children}
-      <div className="pointer-events-none fixed bottom-5 right-5 z-[100] flex w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2">
+      <div className="pointer-events-none fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-[100] lg:bottom-5 lg:right-5 flex w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2">
         {toasts.map((t) => (
           <div key={t.id} className={cn("pointer-events-auto fade-up flex items-start gap-3 rounded-xl border bg-surface p-3.5 shadow-pop", t.kind === "error" ? "border-danger/30" : t.kind === "success" ? "border-success/30" : "border-line")}>
             {t.kind === "success" && <CheckCircle2 className="mt-0.5 h-5 w-5 text-success" />}

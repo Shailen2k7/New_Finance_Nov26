@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, sessionSecret, verifySessionToken } from "./lib/auth-edge";
 
-const PUBLIC = [/^\/login/, /^\/api\/auth\//, /^\/api\/worker\//];
+const PUBLIC = [/^\/login/, /^\/api\/auth\//, /^\/api\/worker\//, /^\/api\/health$/, /^\/offline\.html$/];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -25,5 +25,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  // App files (icons, manifest, service worker) must load without signing in, or phones cannot install the app.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|offline.html|icons/|apple-touch-icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
 };

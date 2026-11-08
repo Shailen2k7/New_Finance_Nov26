@@ -2,6 +2,7 @@ import { getSettings } from "@/lib/settings";
 import { SettingsForm } from "@/components/settings/settings-form";
 import { DeploymentCard } from "@/components/settings/deployment-card";
 import { AccountCard } from "@/components/settings/account-card";
+import { InstallAppCard } from "@/components/pwa/install-card";
 import { getSession } from "@/lib/auth";
 import { PageHeader } from "@/components/ui/misc";
 import { PageTabs } from "@/components/layout/page-tabs";
@@ -29,6 +30,7 @@ export default async function SettingsPage() {
         />
         <div className="space-y-5">
           <AccountCard userName={session?.name ?? "Unknown"} />
+          <InstallAppCard />
           <DeploymentCard {...deployment} />
         </div>
       </div>

@@ -252,7 +252,7 @@ export function ReviewView({ batch, rows: initialRows, categories, baseCurrency 
       </div>
 
       {!committed && (
-        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-line bg-surface/95 px-5 py-3 backdrop-blur lg:bottom-3 lg:left-[256px] lg:right-3 lg:rounded-b-2xl">
+        <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-20 border-t border-line bg-surface/95 px-5 py-3 backdrop-blur lg:bottom-3 lg:left-[256px] lg:right-3 lg:rounded-b-2xl">
           <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3">
             <div className="text-[13px] text-muted">
               <span className="font-medium text-ink">{toImport.length}</span> transactions will be added · in <span className="tnum text-success">{formatMoney(inMinor, currency)}</span> · out <span className="tnum text-ink">{formatMoney(-outMinor, currency)}</span>

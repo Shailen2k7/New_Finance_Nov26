@@ -25,7 +25,7 @@ export function Topbar({ onMenu, onCommand, userName }: { onMenu: () => void; on
         </button>
         <button onClick={onCommand} aria-label="Search" className="flex h-10 w-10 items-center justify-center rounded-xl border border-line text-muted md:hidden"><Search className="h-4 w-4" /></button>
         {!hasOwnAdd && (
-          <Link href="/transactions?new=1" aria-label="Add transaction" className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-3 text-[14px] font-medium text-ink hover:bg-surface-2">
+          <Link href="/transactions?new=1" aria-label="Add transaction" className="hidden h-10 items-center gap-2 lg:inline-flex rounded-xl border border-line bg-surface px-3 text-[14px] font-medium text-ink hover:bg-surface-2">
             <Plus className="h-4 w-4" /> <span className="hidden lg:inline">Add Transaction</span>
           </Link>
         )}

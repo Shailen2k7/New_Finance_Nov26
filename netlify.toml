@@ -15,3 +15,14 @@
 # Background function that runs the AI statement parser (up to 15 minutes)
 [functions."parse-statement-background"]
   included_files = ["src/lib/**"]
+
+# The phone app's service worker must always be checked for updates.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
